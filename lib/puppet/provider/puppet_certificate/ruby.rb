@@ -6,7 +6,7 @@ Puppet::Type.type(:puppet_certificate).provide(:ruby) do
 
   def create
     debug "create #{@resource[:name]}"
-    generate_key
+    #generate_key
     submit_csr
     if ca_location == 'local'
       sign_certificate
@@ -103,7 +103,7 @@ Puppet::Type.type(:puppet_certificate).provide(:ruby) do
 
   def clean
       debug "cleaning #{@resource[:name]} on ca"
-      req = Net::HTTP::Delete.new("/puppet-ca/v1/certificate_status/#{@resource[:name]}")
+      req = Net::HTTP::Delete.new("/production/certificate_status/#{@resource[:name]}")
       https = Net::HTTP.new(Puppet.settings[:ca_server], Puppet.settings[:ca_port])
       https.use_ssl = true
       https.cert = OpenSSL::X509::Certificate.new(File.read(Puppet.settings[:hostcert]))
@@ -111,7 +111,7 @@ Puppet::Type.type(:puppet_certificate).provide(:ruby) do
       https.verify_mode = OpenSSL::SSL::VERIFY_PEER
       https.ca_file = Puppet.settings[:localcacert]
       resp = https.start { |cx| cx.request(req) }
-      if resp.code_type != Net::HTTPNoContent
+      if resp.code_type != Net::HTTPOK
           warning "failed to clean certificate: #{resp.body}"
       end
   end
